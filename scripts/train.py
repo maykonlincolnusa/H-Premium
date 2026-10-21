@@ -1,6 +1,7 @@
 """Train an auditable baseline price-per-m² model from official Rio ITBI spreadsheets."""
 import json
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -77,7 +78,16 @@ def main() -> None:
     model.fit(X_train, y_train)
     prediction = np.expm1(model.predict(X_test))
     actual = np.expm1(y_test)
-    metrics = {"records": int(len(data)), "mae_brl_m2": round(float(mean_absolute_error(actual, prediction)), 2), "source": "ITBI Prefeitura do Rio"}
+    metrics = {
+        "records": int(len(data)),
+        "normalized_source_rows": int(len(load_itbi())),
+        "mae_brl_m2": round(float(mean_absolute_error(actual, prediction)), 2),
+        "source": "ITBI Prefeitura do Rio (2019–2025)",
+        "valuation_model": "HistGradientBoostingRegressor",
+        "semantic_model": "intfloat/multilingual-e5-small",
+        "features": ["bairro", "área construída"],
+        "trained_at": datetime.now(timezone.utc).isoformat(),
+    }
     joblib.dump(model, OUT / "price_model.joblib")
     (OUT / "metrics.json").write_text(json.dumps(metrics, ensure_ascii=False, indent=2))
     print(json.dumps(metrics, ensure_ascii=False))

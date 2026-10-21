@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 
 from .schemas import PropertyInput, ValuationResponse
 from .services import SimilarityService, ValuationService
@@ -6,6 +9,7 @@ from .services import SimilarityService, ValuationService
 app = FastAPI(title="Vista AI", version="0.1.0", description="Inteligência de mercado para imóveis premium do Rio.")
 valuation = ValuationService()
 similarity = SimilarityService()
+ROOT = Path(__file__).resolve().parents[2]
 
 
 @app.get("/health")
@@ -33,3 +37,15 @@ def create_embeddings(texts: list[str]) -> dict:
     if not texts or len(texts) > 50:
         raise HTTPException(status_code=422, detail="Envie de 1 a 50 textos.")
     return {"model": "intfloat/multilingual-e5-small", "embeddings": similarity.encode(texts)}
+
+
+@app.get("/v1/training/summary")
+def training_summary() -> dict:
+    return {
+        "status": "completed" if valuation.model is not None else "awaiting_training",
+        **valuation.metrics,
+        "raw_files": ["itbi_2019_2024.xlsx", "itbi_2025_diante.xlsx"],
+    }
+
+
+app.mount("/", StaticFiles(directory=ROOT / "dist", html=True), name="frontend")

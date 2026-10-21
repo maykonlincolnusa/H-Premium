@@ -1,5 +1,13 @@
 {
   "records": 75000,
+  "normalized_source_rows": 306671,
   "mae_brl_m2": 1900.68,
-  "source": "ITBI Prefeitura do Rio"
+  "source": "ITBI Prefeitura do Rio (2019–2025)",
+  "valuation_model": "HistGradientBoostingRegressor",
+  "semantic_model": "intfloat/multilingual-e5-small",
+  "features": [
+    "bairro",
+    "área construída"
+  ],
+  "trained_at": "2026-10-21T23:44:50.247644+00:00"
 }

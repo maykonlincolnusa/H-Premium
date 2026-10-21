@@ -1,0 +1,7 @@
+.git
+.venv
+__pycache__
+data
+models/hf
+artifacts
+dist/.DS_Store
