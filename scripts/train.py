@@ -18,7 +18,7 @@ from sklearn.preprocessing import OneHotEncoder
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"
 OUT = ROOT / "models"
-CACHE = ROOT / "data" / "processed" / "itbi_training.csv"
+CACHE = ROOT / "data" / "processed" / "itbi_training_v2.csv"
 
 
 def normalise(name: str) -> str:
@@ -37,22 +37,22 @@ def load_itbi() -> pd.DataFrame:
         raise FileNotFoundError("Planilhas não encontradas em data/raw.")
     frames = []
     for file in files:
-        for sheet, frame in pd.read_excel(file, sheet_name=None).items():
+        for _, frame in pd.read_excel(file, sheet_name=None).items():
             frame.columns = [normalise(c) for c in frame.columns]
-            frames.append(frame)
-    raw = pd.concat(frames, ignore_index=True)
-    cols = list(raw.columns)
-    bairro = "bairro" if "bairro" in cols else choose(cols, ["bairro"])
-    area = "area" if "area" in cols else choose(cols, ["area_construida", "area"])
-    value = "vl_declarado" if "vl_declarado" in cols else choose(cols, ["valor_transacao", "valor_do_imovel", "valor"])
-    if not all([bairro, area, value]):
-        raise ValueError(f"Não consegui mapear bairro/área/valor. Colunas encontradas: {cols}")
-    data = pd.DataFrame({"bairro": raw[bairro], "area_m2": pd.to_numeric(raw[area], errors="coerce"), "value_brl": pd.to_numeric(raw[value], errors="coerce")})
+            cols = list(frame.columns)
+            bairro = "bairro" if "bairro" in cols else ("nm_bairro_norm" if "nm_bairro_norm" in cols else choose(cols, ["bairro"]))
+            area = "area" if "area" in cols else choose(cols, ["area_construida", "area"])
+            value = "vl_declarado" if "vl_declarado" in cols else ("valor_transacoes" if "valor_transacoes" in cols else choose(cols, ["valor_transacao", "valor_do_imovel", "valor"]))
+            if not all([bairro, area, value]):
+                raise ValueError(f"Não consegui mapear bairro/área/valor em {file.name}. Colunas: {cols}")
+            frames.append(pd.DataFrame({"bairro": frame[bairro], "area_m2": pd.to_numeric(frame[area], errors="coerce"), "value_brl": pd.to_numeric(frame[value], errors="coerce")}))
+    data = pd.concat(frames, ignore_index=True)
     data["quartos"] = 0
     data["suites"] = 0
     data["vagas"] = 0
     data = data.dropna(subset=["bairro", "area_m2", "value_brl"])
     data = data[(data.area_m2 >= 20) & (data.area_m2 <= 1500) & (data.value_brl >= 100000)]
+    data["bairro"] = data["bairro"].astype(str).str.replace(r"_x0020_", " ", regex=True).str.strip().str.upper()
     data["price_m2"] = data.value_brl / data.area_m2
     data = data[(data.price_m2 >= 1000) & (data.price_m2 <= 100000)]
     CACHE.parent.mkdir(parents=True, exist_ok=True)

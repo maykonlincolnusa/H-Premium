@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 .env
 data/raw/
+data/processed/
 models/hf/
 artifacts/
 *.pyc

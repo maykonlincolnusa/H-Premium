@@ -19,7 +19,7 @@ class ValuationService:
     def estimate(self, bairro: str, area_m2: float, quartos: int, suites: int, vagas: int) -> tuple[float, str]:
         if self.model is None:
             raise RuntimeError("Modelo de valuation não encontrado. Execute: python scripts/train.py")
-        row = pd.DataFrame([{"bairro": bairro, "area_m2": area_m2, "quartos": quartos, "suites": suites, "vagas": vagas}])
+        row = pd.DataFrame([{"bairro": bairro.strip().upper(), "area_m2": area_m2, "quartos": quartos, "suites": suites, "vagas": vagas}])
         price_m2 = float(np.expm1(self.model.predict(row)[0]))
         mae = self.metrics.get("mae_brl_m2", 0)
         confidence = "alta" if mae and mae / price_m2 < 0.15 else "moderada"
