@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from .schemas import PropertyInput, ValuationResponse
@@ -65,6 +66,20 @@ def dashboard() -> dict:
             {"format": "Roteiro comercial", "topic": "Como conversar com proprietário acima da faixa", "goal": "Aumentar revisão de preço"},
         ],
     }
+
+
+@app.get("/", include_in_schema=False, response_class=HTMLResponse)
+def frontend() -> str:
+    """Serve the dashboard with its application script enabled.
+
+    The legacy artifact contains an inactive, browser-dependent dashboard
+    script.  Load the maintained controller after it, so every supported
+    browser gets the same navigation and data rendering behavior.
+    """
+    index = ROOT / "dist" / "index.html"
+    return index.read_text(encoding="utf-8").replace(
+        "</body>", '<script src="/dashboard.js"></script></body>', 1
+    )
 
 
 app.mount("/", StaticFiles(directory=ROOT / "dist", html=True), name="frontend")
