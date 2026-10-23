@@ -19,5 +19,5 @@ document.querySelector('.close').addEventListener('click',function(){document.ge
   one('#form').onsubmit = async e => { e.preventDefault(); const f=new FormData(e.currentTarget), out=one('#result'); out.innerHTML='<div class="empty">Consultando modelo…</div>'; try { const r=await fetch('/v1/valuation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bairro:f.get('bairro'),area_m2:+f.get('area'),quartos:+f.get('quartos'),suites:+f.get('suites'),vagas:+f.get('vagas'),descricao:f.get('desc')})}); const d=await r.json(); out.innerHTML='<div class="eyebrow">LEITURA DE PREÇO</div><div class="price">'+new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(d.estimated_total_brl)+'</div><small class="good">● confiança '+d.confidence+'</small><div class="recommend"><b>Próxima conversa recomendada</b>Use esta referência como ponto de partida e valide comparáveis, atributos e a condição real do imóvel.</div>'; } catch { out.innerHTML='<div class="empty">Modelo indisponível. Verifique o localhost.</div>'; } };
 })();
 </script>
-</body> 
+<script src="/dashboard.js"></script></body>
 </html>
