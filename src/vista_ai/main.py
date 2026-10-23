@@ -48,4 +48,23 @@ def training_summary() -> dict:
     }
 
 
+@app.get("/v1/dashboard")
+def dashboard() -> dict:
+    """Demo data shape; replace with CRM/listing integrations in the pilot."""
+    return {
+        "mode": "demo",
+        "kpis": {"priority_opportunities": 8, "pricing_reviews": 5, "stalled_listings": 12, "marketing_angles": 4},
+        "opportunities": [
+            {"id": "HP-001", "property": "Apartamento · Jardim Oceânico", "detail": "238 m² · 4 quartos · vista parcial", "signal": "Captação alta", "action": "Ligar hoje", "score": 92},
+            {"id": "HP-002", "property": "Cobertura · Península", "detail": "180 m² · 3 suítes · andar alto", "signal": "Preço em alerta", "action": "Reunião com dono", "score": 88},
+            {"id": "HP-003", "property": "Frontal mar · Lúcio Costa", "detail": "210 m² · 4 quartos · alto padrão", "signal": "Marketing prioritário", "action": "Produzir vídeo", "score": 81},
+        ],
+        "marketing": [
+            {"format": "Reel", "topic": "O que R$ 5 milhões compra hoje no Jardim Oceânico", "goal": "Atrair comprador qualificado"},
+            {"format": "Carrossel", "topic": "3 diferenciais que sustentam preço na Barra", "goal": "Defender posicionamento premium"},
+            {"format": "Roteiro comercial", "topic": "Como conversar com proprietário acima da faixa", "goal": "Aumentar revisão de preço"},
+        ],
+    }
+
+
 app.mount("/", StaticFiles(directory=ROOT / "dist", html=True), name="frontend")

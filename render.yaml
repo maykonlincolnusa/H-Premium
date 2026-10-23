@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: h-premium
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health

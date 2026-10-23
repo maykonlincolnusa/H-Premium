@@ -47,3 +47,8 @@ O script salva `models/price_model.joblib` e `models/metrics.json`. Para produç
 3. Faça o deploy pelo `railway.toml`. O build baixa o modelo HF e inclui o estimador versionado em `models/`.
 
 Não suba CRM, endereços completos, dados pessoais ou credenciais para o Git. O `.gitignore` já protege os dados brutos e artefatos locais.
+
+## Render
+
+O `render.yaml` define este projeto como um serviço web Docker com verificação em `/health`.
+Ao conectar o repositório no Render, selecione a branch `main` e o diretório raiz do repositório. O `Dockerfile` já inclui a interface em `dist/`, o código da API e o modelo tabular treinado.
