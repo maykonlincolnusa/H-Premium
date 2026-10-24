@@ -56,14 +56,18 @@
   }
 
   function showPage(pageId) {
-    $$('.tab').forEach((tab) => tab.classList.toggle('on', tab.dataset === pageId));
+    $$('.tab').forEach((tab) => tab.classList.toggle('on', tab.getAttribute('data') === pageId));
     $$('.page').forEach((page) => page.classList.toggle('on', page.id === pageId));
   }
 
   function openModal() { $('#modal')?.classList.add('open'); }
   function closeModal() { $('#modal')?.classList.remove('open'); }
 
-  $$('.tab').forEach((tab) => tab.addEventListener('click', () => showPage(tab.dataset)));
+  // Legacy markup still calls modal() from inline attributes. Keep that
+  // compatibility shim while all event handling remains in this controller.
+  window.modal = (isOpen) => (isOpen ? openModal() : closeModal());
+
+  $$('.tab').forEach((tab) => tab.addEventListener('click', () => showPage(tab.getAttribute('data'))));
   $$('.new').forEach((button) => button.addEventListener('click', (event) => { event.preventDefault(); openModal(); }));
   $('.close')?.addEventListener('click', closeModal);
   $('#search')?.addEventListener('input', render);

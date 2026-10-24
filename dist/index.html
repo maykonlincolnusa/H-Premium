@@ -9,7 +9,7 @@ document.querySelectorAll('.tab').forEach(function(tab){tab.addEventListener('cl
 document.querySelectorAll('.new').forEach(function(button){button.addEventListener('click',function(event){event.preventDefault();var dialog=document.getElementById('modal');if(dialog)dialog.classList.add('open')})});
 document.querySelector('.close').addEventListener('click',function(){document.getElementById('modal').classList.remove('open')});
 </script>
-<script>
+<script type="text/plain">
 (() => {
   const all = s => [...document.querySelectorAll(s)], one = s => document.querySelector(s);
   all('.tab').forEach(tab => tab.onclick = () => { all('.tab').forEach(x=>x.classList.remove('on')); all('.page').forEach(x=>x.classList.remove('on')); tab.classList.add('on'); one('#'+tab.dataset)?.classList.add('on'); });

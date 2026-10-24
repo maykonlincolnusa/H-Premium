@@ -19,7 +19,19 @@ class ValuationService:
     def estimate(self, bairro: str, area_m2: float, quartos: int, suites: int, vagas: int) -> tuple[float, str]:
         if self.model is None:
             raise RuntimeError("Modelo de valuation não encontrado. Execute: python scripts/train.py")
-        row = pd.DataFrame([{"bairro": bairro.strip().upper(), "area_m2": area_m2, "quartos": quartos, "suites": suites, "vagas": vagas}])
+        # ITBI does not provide rooms, suites or parking spaces.  The current
+        # artifact still contains those legacy columns, all trained as zero;
+        # keep them at that baseline so a form entry cannot suggest a signal
+        # that the training data never contained.
+        values = {
+            "bairro": bairro.strip().upper(),
+            "area_m2": area_m2,
+            "quartos": 0,
+            "suites": 0,
+            "vagas": 0,
+        }
+        expected_features = list(getattr(self.model, "feature_names_in_", values))
+        row = pd.DataFrame([{feature: values[feature] for feature in expected_features}])
         price_m2 = float(np.expm1(self.model.predict(row)[0]))
         mae = self.metrics.get("mae_brl_m2", 0)
         confidence = "alta" if mae and mae / price_m2 < 0.15 else "moderada"

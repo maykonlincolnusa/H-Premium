@@ -38,7 +38,7 @@ Documentação interativa: `http://localhost:8000/docs`.
 
 O treinamento não faz fine-tuning de um LLM. Ele treina um **modelo tabular de valuation** sobre transações oficiais e usa o modelo HF já pré-treinado para similaridade semântica. Isso é mais seguro, auditável e adequado para a primeira versão, pois não existe conjunto de rótulos próprio para fine-tuning de linguagem.
 
-O script salva `models/price_model.joblib` e `models/metrics.json`. Para produção, valide o erro por bairro/tipologia e substitua ou complemente ITBI por comparáveis reais e dados autorizados da imobiliária.
+O script salva `models/price_model.joblib` e `models/metrics.json`. Nesta versão, a estimativa usa somente bairro e área construída: as planilhas ITBI não contêm quartos, suítes, vagas ou características descritivas. Para produção, valide o erro por bairro/tipologia e complemente ITBI com comparáveis reais e dados autorizados da imobiliária antes de usar esses atributos na precificação.
 
 ## Railway
 

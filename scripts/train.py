@@ -48,9 +48,6 @@ def load_itbi() -> pd.DataFrame:
                 raise ValueError(f"Não consegui mapear bairro/área/valor em {file.name}. Colunas: {cols}")
             frames.append(pd.DataFrame({"bairro": frame[bairro], "area_m2": pd.to_numeric(frame[area], errors="coerce"), "value_brl": pd.to_numeric(frame[value], errors="coerce")}))
     data = pd.concat(frames, ignore_index=True)
-    data["quartos"] = 0
-    data["suites"] = 0
-    data["vagas"] = 0
     data = data.dropna(subset=["bairro", "area_m2", "value_brl"])
     data = data[(data.area_m2 >= 20) & (data.area_m2 <= 1500) & (data.value_brl >= 100000)]
     data["bairro"] = data["bairro"].astype(str).str.replace(r"_x0020_", " ", regex=True).str.strip().str.upper()
@@ -67,12 +64,15 @@ def main() -> None:
     # Baseline deliberately capped so it can be retrained on a laptop and in CI.
     # Production can remove this cap after validating the feature set with the brokerage.
     data = data.sample(n=min(len(data), 75000), random_state=42)
-    X = data[["bairro", "area_m2", "quartos", "suites", "vagas"]]
+    # The official ITBI aggregate has no bedroom, suite or parking fields.
+    # Training on invented zero-filled columns only creates a false promise in
+    # the product, so the baseline deliberately uses the two observed fields.
+    X = data[["bairro", "area_m2"]]
     y = np.log1p(data["price_m2"])
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     preprocessor = ColumnTransformer([
         ("bairro", Pipeline([("fill", SimpleImputer(strategy="most_frequent")), ("ohe", OneHotEncoder(handle_unknown="ignore", sparse_output=False))]), ["bairro"]),
-        ("numerical", SimpleImputer(strategy="median"), ["area_m2", "quartos", "suites", "vagas"]),
+        ("numerical", SimpleImputer(strategy="median"), ["area_m2"]),
     ])
     model = Pipeline([("features", preprocessor), ("regressor", HistGradientBoostingRegressor(max_iter=100, l2_regularization=1.0, random_state=42))])
     model.fit(X_train, y_train)
