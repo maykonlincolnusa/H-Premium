@@ -34,6 +34,12 @@ uvicorn vista_ai.main:app --host 0.0.0.0 --port 8000
 
 Documentação interativa: `http://localhost:8000/docs`.
 
+Abra o painel pela mesma origem da API em `http://localhost:8000` para que a
+precificação funcione automaticamente. Se a pasta `dist/` for hospedada como
+site estático, informe a URL pública da API uma única vez pelo parâmetro
+`?api=https://sua-api.exemplo.com`; o painel guarda essa configuração no
+navegador. A API já responde a requisições cross-origin para esse cenário.
+
 ## Treinamento
 
 O treinamento não faz fine-tuning de um LLM. Ele treina um **modelo tabular de valuation** sobre transações oficiais e usa o modelo HF já pré-treinado para similaridade semântica. Isso é mais seguro, auditável e adequado para a primeira versão, pois não existe conjunto de rótulos próprio para fine-tuning de linguagem.

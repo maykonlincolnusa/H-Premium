@@ -1,6 +1,8 @@
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -8,6 +10,17 @@ from .schemas import PropertyInput, ValuationResponse
 from .services import SimilarityService, ValuationService
 
 app = FastAPI(title="Vista AI", version="0.1.0", description="Inteligência de mercado para imóveis premium do Rio.")
+
+# The dashboard can be hosted with the API (Docker/Render) or as a static site.
+# Allow a separately hosted dashboard to call the public, read-only valuation API.
+allowed_origins = [origin.strip() for origin in os.getenv("CORS_ALLOW_ORIGINS", "*").split(",") if origin.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
 valuation = ValuationService()
 similarity = SimilarityService()
 ROOT = Path(__file__).resolve().parents[2]
