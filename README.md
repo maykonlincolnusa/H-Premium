@@ -61,6 +61,11 @@ podem ser reinicializados em um novo deploy. A API oferece `GET/POST
 Essa última rota usa `intfloat/multilingual-e5-small` para ranquear imóveis da
 carteira por similaridade semântica.
 
+Para trazer a carteira inicial, envie um CSV UTF-8 para `POST /v1/import/csv`.
+As colunas obrigatórias são `name,bairro,details,area_m2,asking_brl`; as
+opcionais são `market_brl,days_on_market,responsible,stage,visits,proposals`.
+O resumo gerencial fica em `GET /v1/management/summary`.
+
 Não suba CRM, endereços completos, dados pessoais ou credenciais para o Git. O `.gitignore` já protege os dados brutos e artefatos locais.
 
 ## Render

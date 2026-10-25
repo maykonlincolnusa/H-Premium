@@ -1,12 +1,14 @@
 import os
+import csv
+import io
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from .repository import complete_action, create_property, initialise, list_actions, list_properties
+from .repository import complete_action, create_property, initialise, list_actions, list_properties, management_summary
 from .schemas import ComparableRequest, PropertyCreate, PropertyInput, ValuationResponse
 from .services import SimilarityService, ValuationService
 
@@ -39,9 +41,39 @@ def properties() -> list[dict]:
     return list_properties()
 
 
+@app.get("/v1/management/summary")
+def management() -> dict:
+    return management_summary()
+
+
 @app.post("/v1/properties", status_code=201)
 def add_property(property: PropertyCreate) -> dict:
     return create_property(property.model_dump())
+
+
+@app.post("/v1/import/csv", status_code=201)
+def import_properties_csv(content: str = Body(..., media_type="text/plain")) -> dict:
+    """Import a UTF-8 CSV with the operational portfolio columns."""
+    reader = csv.DictReader(io.StringIO(content))
+    required = {"name", "bairro", "details", "area_m2", "asking_brl"}
+    if not reader.fieldnames or not required.issubset(reader.fieldnames):
+        raise HTTPException(status_code=422, detail="CSV precisa conter: name,bairro,details,area_m2,asking_brl")
+    imported = 0
+    for row in reader:
+        if not any(row.values()):
+            continue
+        try:
+            create_property({
+                "name": row["name"].strip(), "bairro": row["bairro"].strip(), "details": row["details"].strip(),
+                "area_m2": float(row["area_m2"]), "asking_brl": float(row["asking_brl"]),
+                "market_brl": float(row["market_brl"]) if row.get("market_brl") else None,
+                "days_on_market": int(row.get("days_on_market") or 0), "responsible": row.get("responsible") or "Não atribuído",
+                "stage": row.get("stage") or "Captação", "visits": int(row.get("visits") or 0), "proposals": int(row.get("proposals") or 0),
+            })
+            imported += 1
+        except (TypeError, ValueError, AttributeError) as exc:
+            raise HTTPException(status_code=422, detail=f"Linha inválida no CSV: {row}") from exc
+    return {"imported": imported}
 
 
 @app.get("/v1/actions")

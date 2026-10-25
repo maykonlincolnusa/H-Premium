@@ -27,6 +27,10 @@ class PropertyCreate(BaseModel):
     asking_brl: float = Field(gt=0)
     market_brl: Optional[float] = Field(default=None, gt=0)
     days_on_market: int = Field(default=0, ge=0, le=10_000)
+    responsible: str = Field(default="Não atribuído", max_length=120)
+    stage: str = Field(default="Captação", max_length=50)
+    visits: int = Field(default=0, ge=0)
+    proposals: int = Field(default=0, ge=0)
 
 
 class ComparableRequest(BaseModel):

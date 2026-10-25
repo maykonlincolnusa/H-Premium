@@ -37,6 +37,11 @@ def initialise() -> None:
               FOREIGN KEY(property_id) REFERENCES properties(id)
             );
         """)
+        for column, definition in (("responsible", "TEXT NOT NULL DEFAULT 'Não atribuído'"), ("stage", "TEXT NOT NULL DEFAULT 'Captação'"), ("visits", "INTEGER NOT NULL DEFAULT 0"), ("proposals", "INTEGER NOT NULL DEFAULT 0")):
+            try:
+                conn.execute(f"ALTER TABLE properties ADD COLUMN {column} {definition}")
+            except sqlite3.OperationalError:
+                pass
         if conn.execute("SELECT COUNT(*) FROM properties").fetchone()[0] == 0:
             conn.executemany("INSERT INTO properties (name,bairro,details,area_m2,asking_brl,market_brl,days_on_market) VALUES (?,?,?,?,?,?,?)", SEED_PROPERTIES)
             conn.execute("INSERT INTO actions (property_id,title,detail) VALUES (2,?,?)", ("Reunião de preço · Cobertura Península", "Pedido acima da referência e 83 dias em carteira."))
@@ -50,9 +55,20 @@ def list_properties() -> list[dict]:
 
 def create_property(data: dict) -> dict:
     with connection() as conn:
-        cursor = conn.execute("INSERT INTO properties (name,bairro,details,area_m2,asking_brl,market_brl,days_on_market) VALUES (?,?,?,?,?,?,?)", (data["name"], data["bairro"], data["details"], data["area_m2"], data["asking_brl"], data.get("market_brl"), data.get("days_on_market", 0)))
+        cursor = conn.execute("INSERT INTO properties (name,bairro,details,area_m2,asking_brl,market_brl,days_on_market,responsible,stage,visits,proposals) VALUES (?,?,?,?,?,?,?,?,?,?,?)", (data["name"], data["bairro"], data["details"], data["area_m2"], data["asking_brl"], data.get("market_brl"), data.get("days_on_market", 0), data.get("responsible", "Não atribuído"), data.get("stage", "Captação"), data.get("visits", 0), data.get("proposals", 0)))
         row = conn.execute("SELECT * FROM properties WHERE id=?", (cursor.lastrowid,)).fetchone()
         return dict(row)
+
+
+def management_summary() -> dict:
+    properties = list_properties()
+    total = len(properties)
+    pipeline = {}
+    brokers = {}
+    for item in properties:
+        pipeline[item["stage"]] = pipeline.get(item["stage"], 0) + 1
+        brokers[item["responsible"]] = brokers.get(item["responsible"], 0) + 1
+    return {"portfolio_count": total, "portfolio_value_brl": sum(item["asking_brl"] for item in properties), "visits": sum(item["visits"] for item in properties), "proposals": sum(item["proposals"] for item in properties), "pipeline": pipeline, "brokers": brokers}
 
 
 def list_actions() -> list[dict]:

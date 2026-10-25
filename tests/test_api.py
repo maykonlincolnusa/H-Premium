@@ -58,6 +58,15 @@ class ApiContractTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers.get("access-control-allow-origin"), "*")
 
+    def test_operational_summary_and_csv_import(self) -> None:
+        summary = self.client.get("/v1/management/summary")
+        self.assertEqual(summary.status_code, 200)
+        self.assertIn("pipeline", summary.json())
+        csv = "name,bairro,details,area_m2,asking_brl,responsible,stage,visits,proposals\nApartamento teste,Barra da Tijuca,Varanda e vista,120,2500000,Ana,Visita,2,1\n"
+        imported = self.client.post("/v1/import/csv", content=csv, headers={"Content-Type": "text/plain"})
+        self.assertEqual(imported.status_code, 201)
+        self.assertEqual(imported.json()["imported"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()
