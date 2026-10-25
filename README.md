@@ -52,6 +52,15 @@ O script salva `models/price_model.joblib` e `models/metrics.json`. Nesta versã
 2. Configure as variáveis `HF_MODEL_NAME=intfloat/multilingual-e5-small` e `PORT=8000`.
 3. Faça o deploy pelo `railway.toml`. O build baixa o modelo HF e inclui o estimador versionado em `models/`.
 
+### Operação compartilhada
+
+O piloto operacional persiste carteira e ações em SQLite. No Railway, adicione
+um Volume e configure `DATABASE_PATH=/data/vista_ai.db`; sem o Volume, os dados
+podem ser reinicializados em um novo deploy. A API oferece `GET/POST
+/v1/properties`, `GET /v1/actions`, conclusão de ações e `/v1/comparables`.
+Essa última rota usa `intfloat/multilingual-e5-small` para ranquear imóveis da
+carteira por similaridade semântica.
+
 Não suba CRM, endereços completos, dados pessoais ou credenciais para o Git. O `.gitignore` já protege os dados brutos e artefatos locais.
 
 ## Render

@@ -6,7 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from .schemas import PropertyInput, ValuationResponse
+from .repository import complete_action, create_property, initialise, list_actions, list_properties
+from .schemas import ComparableRequest, PropertyCreate, PropertyInput, ValuationResponse
 from .services import SimilarityService, ValuationService
 
 app = FastAPI(title="Vista AI", version="0.1.0", description="Inteligência de mercado para imóveis premium do Rio.")
@@ -24,11 +25,49 @@ app.add_middleware(
 valuation = ValuationService()
 similarity = SimilarityService()
 ROOT = Path(__file__).resolve().parents[2]
+initialise()
 
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok", "price_model_loaded": valuation.model is not None}
+    semantic_path = ROOT / "models" / "hf" / "multilingual-e5-small"
+    return {"status": "ok", "price_model_loaded": valuation.model is not None, "semantic_model_ready": semantic_path.exists()}
+
+
+@app.get("/v1/properties")
+def properties() -> list[dict]:
+    return list_properties()
+
+
+@app.post("/v1/properties", status_code=201)
+def add_property(property: PropertyCreate) -> dict:
+    return create_property(property.model_dump())
+
+
+@app.get("/v1/actions")
+def actions() -> list[dict]:
+    return list_actions()
+
+
+@app.post("/v1/actions/{action_id}/complete")
+def close_action(action_id: int) -> dict:
+    if not complete_action(action_id):
+        raise HTTPException(status_code=404, detail="Ação não encontrada.")
+    return {"status": "done"}
+
+
+@app.post("/v1/comparables")
+def comparables(request: ComparableRequest) -> dict:
+    portfolio = list_properties()
+    subject = next((item for item in portfolio if item["id"] == request.property_id), None)
+    if subject is None:
+        raise HTTPException(status_code=404, detail="Imóvel não encontrado.")
+    candidates = [{"id": item["id"], "name": item["name"], "bairro": item["bairro"], "asking_brl": item["asking_brl"], "text": f'{item["name"]}. {item["bairro"]}. {item["details"]}'} for item in portfolio if item["id"] != subject["id"]]
+    try:
+        results = similarity.rank(f'{subject["name"]}. {subject["bairro"]}. {subject["details"]}', candidates)
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="Modelo de comparáveis indisponível.") from exc
+    return {"subject_id": subject["id"], "model": "intfloat/multilingual-e5-small", "comparables": results}
 
 
 @app.post("/v1/valuation", response_model=ValuationResponse)

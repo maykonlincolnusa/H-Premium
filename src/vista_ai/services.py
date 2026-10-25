@@ -49,3 +49,11 @@ class SimilarityService:
             model_ref = str(local_model) if local_model.exists() else os.getenv("HF_MODEL_NAME", "intfloat/multilingual-e5-small")
             self._model = SentenceTransformer(model_ref)
         return self._model.encode(texts, normalize_embeddings=True).tolist()
+
+    def rank(self, query: str, candidates: list[dict], limit: int = 3) -> list[dict]:
+        if not candidates:
+            return []
+        embeddings = np.asarray(self.encode([query, *[item["text"] for item in candidates]]))
+        scores = embeddings[1:] @ embeddings[0]
+        ranked = sorted(zip(candidates, scores), key=lambda item: float(item[1]), reverse=True)[:limit]
+        return [{**item, "similarity": round(float(score), 3)} for item, score in ranked]

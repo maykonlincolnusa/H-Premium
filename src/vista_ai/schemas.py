@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -15,3 +17,17 @@ class ValuationResponse(BaseModel):
     estimated_total_brl: float
     confidence: str
     explanation: str
+
+
+class PropertyCreate(BaseModel):
+    name: str = Field(min_length=3, max_length=160)
+    bairro: str = Field(min_length=2, max_length=100)
+    details: str = Field(min_length=1, max_length=1000)
+    area_m2: float = Field(gt=10, le=10_000)
+    asking_brl: float = Field(gt=0)
+    market_brl: Optional[float] = Field(default=None, gt=0)
+    days_on_market: int = Field(default=0, ge=0, le=10_000)
+
+
+class ComparableRequest(BaseModel):
+    property_id: int = Field(gt=0)
