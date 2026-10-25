@@ -34,7 +34,7 @@ class ApiContractTests(unittest.TestCase):
         dashboard = self.client.get("/")
         controller = self.client.get("/dashboard.js")
         self.assertEqual(dashboard.status_code, 200)
-        self.assertIn('src="./dashboard.js"', dashboard.text)
+        self.assertIn('src="./dashboard.js?v=', dashboard.text)
         self.assertNotIn('type="text/plain"', dashboard.text)
         self.assertEqual(controller.status_code, 200)
 
