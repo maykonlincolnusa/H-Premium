@@ -67,6 +67,10 @@ class ApiContractTests(unittest.TestCase):
         self.assertEqual(imported.status_code, 201)
         self.assertEqual(imported.json()["imported"], 1)
 
+    def test_territory_context_rejects_invalid_neighborhood(self) -> None:
+        response = self.client.get("/v1/territory/context", params={"bairro": "X"})
+        self.assertEqual(response.status_code, 422)
+
 
 if __name__ == "__main__":
     unittest.main()

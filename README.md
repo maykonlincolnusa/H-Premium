@@ -66,6 +66,11 @@ As colunas obrigatórias são `name,bairro,details,area_m2,asking_brl`; as
 opcionais são `market_brl,days_on_market,responsible,stage,visits,proposals`.
 O resumo gerencial fica em `GET /v1/management/summary`.
 
+O Dossiê do imóvel também consulta `GET /v1/territory/context?bairro=...`, que
+enriquece a leitura comercial com referência territorial pública do Serviço de
+Dados do IBGE. A resposta é cacheada por 24 horas e nunca bloqueia valuation
+ou comparáveis se a fonte externa estiver indisponível.
+
 Não suba CRM, endereços completos, dados pessoais ou credenciais para o Git. O `.gitignore` já protege os dados brutos e artefatos locais.
 
 ## Render

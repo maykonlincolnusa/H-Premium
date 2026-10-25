@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from .repository import complete_action, create_property, initialise, list_actions, list_properties, management_summary
 from .schemas import ComparableRequest, PropertyCreate, PropertyInput, ValuationResponse
 from .services import SimilarityService, ValuationService
+from .territory import TerritoryService
 
 app = FastAPI(title="Vista AI", version="0.1.0", description="Inteligência de mercado para imóveis premium do Rio.")
 
@@ -26,6 +27,7 @@ app.add_middleware(
 )
 valuation = ValuationService()
 similarity = SimilarityService()
+territory = TerritoryService()
 ROOT = Path(__file__).resolve().parents[2]
 initialise()
 
@@ -44,6 +46,13 @@ def properties() -> list[dict]:
 @app.get("/v1/management/summary")
 def management() -> dict:
     return management_summary()
+
+
+@app.get("/v1/territory/context")
+def territory_context(bairro: str) -> dict:
+    if len(bairro.strip()) < 2:
+        raise HTTPException(status_code=422, detail="Informe um bairro válido.")
+    return territory.context(bairro)
 
 
 @app.post("/v1/properties", status_code=201)
