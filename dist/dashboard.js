@@ -3,8 +3,10 @@
 
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
-  const STORAGE_KEY = 'h-premium-portfolio-v1';
-  const TASKS_KEY = 'h-premium-tasks-v1';
+  // v2 intentionally starts clean: v1 was a browser-only prototype and may
+  // contain records from an incompatible dashboard controller.
+  const STORAGE_KEY = 'h-premium-portfolio-v2';
+  const TASKS_KEY = 'h-premium-tasks-v2';
   const API_KEY = 'h-premium-api-base';
   const money = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(value || 0);
   const escapeHtml = (value) => String(value || '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
