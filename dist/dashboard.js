@@ -57,7 +57,7 @@
     const attention = properties.length ? Math.round(review.length / properties.length * 100) : 0;
     $('#portfolio-value').textContent = money(total);
     $('#portfolio-count').textContent = `${properties.length} imóveis cadastrados`;
-    $('#review-count').textContent = `${review.length} imóvel${review.length === 1 ? '' : 'is'}`;
+    $('#review-count').textContent = `${review.length} ${review.length === 1 ? 'imóvel' : 'imóveis'}`;
     $('#review-value').textContent = review.length ? `${money(review.reduce((sum, property) => sum + number(property.asking), 0))} em exposição` : 'nenhuma revisão urgente';
     $('#market-fit').textContent = priced.length ? `${fit}%` : '—';
     $('#task-count').textContent = tasks.length;
